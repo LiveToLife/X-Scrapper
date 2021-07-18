@@ -15,39 +15,32 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-""" STEP FOUR """
+""" STEP TWO """
 
-import random
 import requests
 
 
-def create_new_tg_app(
-        stel_token,
-        tg_app_hash,
-        app_title,
-        app_shortname,
-        app_url,
-        app_platform,
-        app_desc
+def login_step_get_stel_cookie(
+        input_phone_number,
+        tg_random_hash,
+        tg_cloud_password
 ):
-    # pylint: disable-msg=too-many-arguments
-    """ creates a new my.telegram.org/apps
-    using the provided parameters """
-    request_url = "https://my.telegram.org/apps/create"
-    custom_header = {
-        "Cookie": stel_token
-    }
+    """Logins to my.telegram.org and returns the cookie,
+    or False in case of failure"""
+    request_url = "https://my.telegram.org/auth/login"
     request_data = {
-        "hash": tg_app_hash,
-        "app_title": app_title,
-        "app_shortname": app_shortname,
-        "app_url": app_url,
-        "app_platform": random.choice(app_platform),
-        "app_desc": app_desc
+        "phone": input_phone_number,
+        "random_hash": tg_random_hash,
+        "password": tg_cloud_password
     }
-    response_c = requests.post(
-        request_url,
-        data=request_data,
-        headers=custom_header
-    )
-    return response_c
+    response_c = requests.post(request_url, data=request_data)
+    #
+    re_val = None
+    re_status_id = None
+    if response_c.text == "true":
+        re_val = response_c.headers.get("Set-Cookie")
+        re_status_id = True
+    else:
+        re_val = response_c.text
+        re_status_id = False
+    return re_status_id, re_val
